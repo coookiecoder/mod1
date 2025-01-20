@@ -25,7 +25,7 @@ public:
 	unsigned int get_height() const;
 	unsigned int get_width() const;
 
-	float get_relative_height() const;
+	float get_relative_height(int height, int width) const;
 };
 
 std::ostream& operator<<(std::ostream& output, Floor& lhs);

@@ -42,8 +42,9 @@ unsigned int Floor::get_width() const {
 	return this->width;
 }
 
-float Floor::get_relative_height() const {
-
+float Floor::get_relative_height(int height, int width) const {
+	int relative_height = this->height_value[height][width] - this->min_height;
+	return static_cast<float>(relative_height) / static_cast<float>(this->max_height - this->min_height);
 }
 
 

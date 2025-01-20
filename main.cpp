@@ -37,17 +37,16 @@ int main(int argc, char **argv) {
 	else if (floor.get_height() * scale > 1000 || floor.get_width() * scale > 1000)
 		scale = 1;
 
-	sf::RenderWindow window(sf::VideoMode({(floor.get_width() + 1) * scale, floor.get_height() * scale}), "mod1");
+	sf::RenderWindow window(sf::VideoMode({(floor.get_width() + 2) * scale, floor.get_height() * scale}), "mod1");
 
 	window.setFramerateLimit(60);
 
 
 	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
 		sf::RectangleShape height_scale(sf::Vector2f(scale, scale));
-		height_scale.setPosition(sf::Vector2f(floor.get_width() * scale, current_height * scale));
-		uint8_t red = (static_cast<float>(floor.get_height() - 1) - static_cast<float>(current_height)) / static_cast<float>(floor.get_height() - 1) * 255;
-		uint8_t green = static_cast<float>(current_height) / static_cast<float>(floor.get_height() - 1) * 255;
-		height_scale.setFillColor(sf::Color(red, green, 0, 255));
+		height_scale.setPosition(sf::Vector2f((floor.get_width() + 1) * scale, current_height * scale));
+		uint8_t white = static_cast<float>(current_height) / static_cast<float>(floor.get_height() - 1) * 255;
+		height_scale.setFillColor(sf::Color(white, white, white, 255));
 		window.draw(height_scale);
 	}
 
@@ -57,12 +56,11 @@ int main(int argc, char **argv) {
 
 			actual_height.setPosition(sf::Vector2f(current_width * scale, current_height * scale));
 
-			uint8_t red =
-			uint8_t green =
+			uint8_t white = 255 - floor.get_relative_height(current_height, current_width) * 255;
 
-			std::cout << (int) green << std::endl;
+			std::cout << (int) white << std::endl;
 
-			actual_height.setFillColor(sf::Color(red, green, 0, 255));
+			actual_height.setFillColor(sf::Color(white, white, white, 255));
 			window.draw(actual_height);
 		}
 	}
