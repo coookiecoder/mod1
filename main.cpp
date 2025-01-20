@@ -4,8 +4,34 @@
 #include <iostream>
 
 #include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/RectangleShape.hpp>
 
-#include "SFML/Graphics/RectangleShape.hpp"
+void load2Dmap(sf::RenderWindow &window, Floor &floor, int scale) {
+	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
+		sf::RectangleShape height_scale(sf::Vector2f(scale, scale));
+		height_scale.setPosition(sf::Vector2f((floor.get_width() + 1) * scale, current_height * scale));
+		uint8_t white = static_cast<float>(current_height) / static_cast<float>(floor.get_height() - 1) * 255;
+		height_scale.setFillColor(sf::Color(white, white, white, 255));
+		window.draw(height_scale);
+		if (floor.get_height() <= 20 && floor.get_width() <= 20)
+				window.display();
+	}
+
+	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
+		for (int current_width = 0; current_width < floor.get_width(); ++current_width) {
+			sf::RectangleShape actual_height(sf::Vector2f(scale, scale));
+
+			actual_height.setPosition(sf::Vector2f(current_width * scale, current_height * scale));
+
+			uint8_t white = 255 - floor.get_relative_height(current_height, current_width) * 255;
+
+			actual_height.setFillColor(sf::Color(white, white, white, 255));
+			window.draw(actual_height);
+			if (floor.get_height() <= 20 && floor.get_width() <= 20)
+				window.display();
+		}
+	}
+}
 
 int main(int argc, char **argv) {
 	if (argc != 2) {
@@ -41,34 +67,7 @@ int main(int argc, char **argv) {
 
 	window.setFramerateLimit(60);
 
-
-	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
-		sf::RectangleShape height_scale(sf::Vector2f(scale, scale));
-		height_scale.setPosition(sf::Vector2f((floor.get_width() + 1) * scale, current_height * scale));
-		uint8_t white = static_cast<float>(current_height) / static_cast<float>(floor.get_height() - 1) * 255;
-		height_scale.setFillColor(sf::Color(white, white, white, 255));
-		window.draw(height_scale);
-		if (floor.get_height() <= 20 && floor.get_width() <= 20)
-				window.display();
-	}
-
-	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
-		for (int current_width = 0; current_width < floor.get_width(); ++current_width) {
-			sf::RectangleShape actual_height(sf::Vector2f(scale, scale));
-
-			actual_height.setPosition(sf::Vector2f(current_width * scale, current_height * scale));
-
-			uint8_t white = 255 - floor.get_relative_height(current_height, current_width) * 255;
-
-			std::cout << (int) white << std::endl;
-
-			actual_height.setFillColor(sf::Color(white, white, white, 255));
-			window.draw(actual_height);
-			if (floor.get_height() <= 20 && floor.get_width() <= 20)
-				window.display();
-		}
-	}
-
+	load2Dmap(window, floor, scale);
 
 	while (window.isOpen()) {
 		window.display();
