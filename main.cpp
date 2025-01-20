@@ -48,6 +48,8 @@ int main(int argc, char **argv) {
 		uint8_t white = static_cast<float>(current_height) / static_cast<float>(floor.get_height() - 1) * 255;
 		height_scale.setFillColor(sf::Color(white, white, white, 255));
 		window.draw(height_scale);
+		if (floor.get_height() <= 20 && floor.get_width() <= 20)
+				window.display();
 	}
 
 	for (int current_height = 0; current_height < floor.get_height(); ++current_height) {
@@ -62,9 +64,23 @@ int main(int argc, char **argv) {
 
 			actual_height.setFillColor(sf::Color(white, white, white, 255));
 			window.draw(actual_height);
+			if (floor.get_height() <= 20 && floor.get_width() <= 20)
+				window.display();
 		}
 	}
 
+
+	while (window.isOpen()) {
+		window.display();
+
+		while (const std::optional event = window.pollEvent()) {
+			if (event->is<sf::Event::Closed>())
+				window.close();
+		}
+	}
+
+	window.clear(sf::Color(170, 170, 170, 255));
+	window.create(sf::VideoMode({(floor.get_width() + 2) * scale, floor.get_height() * scale}), "mod1");
 
 	while (window.isOpen()) {
 		window.display();
