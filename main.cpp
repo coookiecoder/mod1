@@ -72,6 +72,7 @@ void load3Dmap(sf::RenderWindow &window, Floor &floor, int scale) {
 		exit(1);
 
 	window.draw(sf::Sprite(texture));
+	window.display();
 }
 
 int main(int argc, char **argv) {
@@ -125,7 +126,6 @@ int main(int argc, char **argv) {
 	load3Dmap(window, floor, scale);
 
 	while (window.isOpen()) {
-		window.display();
 
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>())
