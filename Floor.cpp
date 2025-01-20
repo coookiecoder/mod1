@@ -1,6 +1,6 @@
 #include "Floor.hpp"
 
-Floor::Floor(const int height, const int width, std::fstream& input_file) : height(height), width(width) {
+Floor::Floor(const unsigned int height, const unsigned int width, std::fstream& input_file) : height(height), width(width) {
 	this->height_value = std::vector<std::vector<int>>(height);
 
 	for (auto &item: this->height_value) {
@@ -33,6 +33,19 @@ int Floor::get_max_height() const {
 int Floor::get_min_height() const {
 	return this->min_height;
 }
+
+unsigned int Floor::get_height() const {
+	return this->height;
+}
+
+unsigned int Floor::get_width() const {
+	return this->width;
+}
+
+float Floor::get_relative_height() const {
+
+}
+
 
 std::ostream& operator<<(std::ostream& output, Floor& lhs) {
 	for (auto &row: lhs.get_height_value()) {
