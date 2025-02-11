@@ -6,6 +6,8 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
 #include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/VertexArray.hpp>
+#include <SFML/Graphics.hpp>
 
 sf::Vector3<double> findHeight3D(sf::Vector3<double> pointOne, sf::Vector3<double> pointTwo, double position);
 sf::Vector3<double> findHeight3D(sf::Vector3<int> pointOne, sf::Vector3<int> pointTwo, double position);

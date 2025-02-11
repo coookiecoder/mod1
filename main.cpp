@@ -53,10 +53,13 @@ int main(int argc, char **argv) {
 	else
 		scale_image = max_y / 1000;
 
-	sf::RenderWindow window(sf::VideoMode({max_x / scale_image, max_y / scale_image}), "mod1");
+	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image / 2 + 1}), "mod1");
 	window.setFramerateLimit(60);
 
-	sf::Image image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Black);
+	sf::Image image({max_x / scale_image + 1, max_y / scale_image / 2 + 1}, sf::Color::Black);
+	std::cout << image.getSize().x << std::endl;
+	std::cout << image.getSize().y << std::endl;
+
 	try {
 		calculateImage(image, map, scale, scale_image);
 	} catch (std::exception& error) {

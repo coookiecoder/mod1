@@ -73,7 +73,6 @@ void makeMapSquare(std::vector<std::vector<sf::Vector3<int>>> &map) {
 		map.emplace(map.begin());
 		while (map[0].size() < max_width) {
 			map[0].emplace_back(0, map[1][map[0].size()].y, 0);
-			std::cout << map[0].size() - 1;
 		}
 	}
 
