@@ -53,10 +53,10 @@ int main(int argc, char **argv) {
 	else
 		scale_image = max_y / 1000;
 
-	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image / 2 + 1}), "mod1");
+	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
 	window.setFramerateLimit(60);
 
-	sf::Image image({max_x / scale_image + 1, max_y / scale_image / 2 + 1}, sf::Color::Black);
+	sf::Image image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Black);
 
 	try {
 		calculateImage(image, map, scale, scale_image);
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	displayImage(image, window);
 
 	while (window.isOpen()) {
-		window.display();
+		displayImage(image, window);
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>())
 				window.close();

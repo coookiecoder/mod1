@@ -60,7 +60,7 @@ void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<
 			for (const auto &linePoint: gridPoint) {
 				for (const auto &Point: linePoint) {
 					unsigned point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2) - (Point.y / scale_image / 2);
-					unsigned point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / 4);
+					unsigned point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / 4) + image.getSize().y / 4;
 					if (Point.z < 10) {
 						color.r = 0;
 						color.g = 0;
