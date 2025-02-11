@@ -57,8 +57,6 @@ int main(int argc, char **argv) {
 	window.setFramerateLimit(60);
 
 	sf::Image image({max_x / scale_image + 1, max_y / scale_image / 2 + 1}, sf::Color::Black);
-	std::cout << image.getSize().x << std::endl;
-	std::cout << image.getSize().y << std::endl;
 
 	try {
 		calculateImage(image, map, scale, scale_image);
