@@ -34,14 +34,13 @@ int main(int argc, char **argv) {
 	}
 
 	std::vector<std::vector<sf::Vector3<int>>> map = convertTo2DMap(point);
-	makeMapSquare(map);
 
-	unsigned int max_x = map[map.size() - 1][0].x;
-	unsigned int max_y = map[map.size() - 1][map[map.size() - 1].size() - 1].y;
+	const unsigned int max_x = map[map.size() - 1][map[map.size() - 1].size() - 1].x;
+	const unsigned int max_y = map[map.size() - 1][map[map.size() - 1].size() - 1].y;
 
 	for (const auto &line: map) {
 		for (const auto &item: line) {
-			std::cout << "(" << item.x << " " << item.y << " " << item.z << ") ";
+			std::cout << "(" << std::setw(5) << item.x << " " << std::setw(6) << item.y << " " << std::setw(6) << item.z << ") ";
 		}
 		std::cout << std::endl;
 	}
@@ -56,12 +55,19 @@ int main(int argc, char **argv) {
 	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
 	window.setFramerateLimit(60);
 
-	sf::Image image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Black);
+	sf::Image image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Blue);
+
+	int max_z = 0;
+	for (const auto item : point) {
+		if (item.z > max_z)
+			max_z = item.z;
+	}
 
 	try {
-		calculateImage(image, map, scale, scale_image);
+		calculateImage(image, map, scale, scale_image, max_z);
 	} catch (std::exception& error) {
 		std::cout << error.what() << std::endl;
+		return (1);
 	}
 	displayImage(image, window);
 
@@ -69,6 +75,8 @@ int main(int argc, char **argv) {
 		displayImage(image, window);
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>())
+				window.close();
+			if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
 				window.close();
 		}
 	}

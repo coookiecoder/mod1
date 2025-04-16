@@ -1,7 +1,4 @@
-#include <iostream>
-#include <SFML/Graphics/RenderWindow.hpp>
-
-#include "Interpolater.hpp"
+#include <Interpolater.hpp>
 
 sf::Vector3<double> findHeight3D(sf::Vector3<double> pointOne, sf::Vector3<double> pointTwo, double position) {
 	if (position > 1 || position < 0)
@@ -50,7 +47,7 @@ std::vector<std::vector<sf::Vector3<double>>> calculateGridPoint(sf::Vector3<int
 	return result;
 }
 
-void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<int>>>& map, const int& scale, const int& scale_image) {
+void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<int>>>& map, const int& scale, const int& scale_image, const int& max_z) {
 	sf::Color color = sf::Color::Black;
 	std::vector<std::vector<sf::Vector3<double>>> gridPoint;
 
@@ -59,20 +56,20 @@ void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<
 			gridPoint = calculateGridPoint(map[x][y], map[x][y + 1], map[x + 1][y], map[x + 1][y + 1], scale);
 			for (const auto &linePoint: gridPoint) {
 				for (const auto &Point: linePoint) {
-					unsigned point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2) - (Point.y / scale_image / 2);
-					unsigned point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / 4) + image.getSize().y / 4;
+					double point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2.0) - (Point.y / scale_image / 2);
+					double point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / 4) + image.getSize().y / 4.0;
 					if (Point.z < 10) {
 						color.r = 0;
 						color.g = 0;
 						color.b = 255;
 					} else {
-						color.r = Point.z / 200 * 255;
+						color.r = Point.z / max_z * 255;
 						color.g = 255 - color.r;
 						color.b = 0;
 					}
 					if (image.getSize().x <= point_x || image.getSize().y <= point_y)
 						throw std::runtime_error("bad config file");
-					image.setPixel({point_x, point_y}, color);
+					image.setPixel({static_cast<unsigned>(point_x), static_cast<unsigned>(point_y)}, color);
 				}
 			}
 		}
