@@ -13,13 +13,13 @@ std::vector<sf::Vector3<int>> parseConfig(const std::string& filename) {
 
 		vector.erase(0, 1);
 		vector.erase(vector.size() - 1, 1);
-		int x = std::stoi(vector) / 10;
+		int x = std::stoi(vector);
 
 		vector.erase(0, vector.find(',') + 1);
-		int y = std::stoi(vector) / 10;
+		int y = std::stoi(vector);
 
 		vector.erase(0, vector.find(',') + 1);
-		int z = std::stoi(vector) / 10;
+		int z = std::stoi(vector);
 
 		points.emplace_back(x, y, z);
 	}

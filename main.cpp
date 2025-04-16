@@ -45,12 +45,17 @@ int main(int argc, char **argv) {
 		std::cout << std::endl;
 	}
 
-	int scale = 500;
+	int scale = 400;
 	int scale_image;
-	if (max_x > max_y)
-		scale_image = max_x / 1000;
-	else
-		scale_image = max_y / 1000;
+	if (max_x >= 1000 || max_y >= 1000) {
+		if (max_x > max_y)
+			scale_image = max_x / 1000;
+		else
+			scale_image = max_y / 1000;
+	} else {
+		std::cout << "map to small" << std::endl;
+		return (1);
+	}
 
 	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
 	window.setFramerateLimit(60);
@@ -63,8 +68,13 @@ int main(int argc, char **argv) {
 			max_z = item.z;
 	}
 
+	float flood_percentage = 0.0;
+	std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> gridPoint;
+
+	calculateGrid(map, gridPoint, scale);
+
 	try {
-		calculateImage(image, map, scale, scale_image, max_z);
+		calculateImage(image, map, gridPoint, scale_image, max_z, flood_percentage);
 	} catch (std::exception& error) {
 		std::cout << error.what() << std::endl;
 		return (1);
@@ -76,8 +86,26 @@ int main(int argc, char **argv) {
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>())
 				window.close();
-			if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
+			if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape) {
 				window.close();
+				continue;
+			}
+			if (event->is<sf::Event::KeyPressed>()) {
+				if (event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Up)
+					flood_percentage += 1.0;
+				if (event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Down)
+					flood_percentage -= 1.0;
+				if (flood_percentage > 100.0)
+					flood_percentage = 0.0;
+				if (flood_percentage < 0.0)
+					flood_percentage = 0.0;
+				try {
+					calculateImage(image, map, gridPoint, scale_image, max_z, flood_percentage);
+				} catch (std::exception& error) {
+					std::cout << error.what() << std::endl;
+					return (1);
+				}
+			}
 		}
 	}
 

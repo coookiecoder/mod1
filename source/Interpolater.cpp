@@ -47,18 +47,29 @@ std::vector<std::vector<sf::Vector3<double>>> calculateGridPoint(sf::Vector3<int
 	return result;
 }
 
-void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<int>>>& map, const int& scale, const int& scale_image, const int& max_z) {
+void calculateGrid(const std::vector<std::vector<sf::Vector3<int>>>& map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint, const int& scale)
+{
+	gridPoint.resize(map.size());
+
+	for (auto &line : gridPoint) {
+		line.resize(map[0].size());
+	}
+
+	for (unsigned int x = 0; x < map.size() - 1; x++)
+		for (unsigned int y = 0; y < map[x].size() - 1; y++)
+			gridPoint[x][y] = calculateGridPoint(map[x][y], map[x][y + 1], map[x + 1][y], map[x + 1][y + 1], scale);
+}
+
+void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<int>>> &map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint, const int& scale_image, const int& max_z, const float& flood_percentage) {
 	sf::Color color = sf::Color::Black;
-	std::vector<std::vector<sf::Vector3<double>>> gridPoint;
 
 	for (unsigned int x = 0; x < map.size() - 1; x++) {
 		for (unsigned int y = 0; y < map[x].size() - 1; y++) {
-			gridPoint = calculateGridPoint(map[x][y], map[x][y + 1], map[x + 1][y], map[x + 1][y + 1], scale);
-			for (const auto &linePoint: gridPoint) {
+			for (const auto &linePoint: gridPoint[x][y]) {
 				for (const auto &Point: linePoint) {
 					double point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2.0) - (Point.y / scale_image / 2);
-					double point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / 4) + image.getSize().y / 4.0;
-					if (Point.z < 10) {
+					double point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / (max_z / 100.0)) + image.getSize().y / 4.0;
+					if (Point.z < max_z / (100 / flood_percentage)) {
 						color.r = 0;
 						color.g = 0;
 						color.b = 255;
@@ -67,8 +78,11 @@ void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<
 						color.g = 255 - color.r;
 						color.b = 0;
 					}
-					if (image.getSize().x <= point_x || image.getSize().y <= point_y)
-						throw std::runtime_error("bad config file");
+					if (image.getSize().x <= point_x || image.getSize().y <= point_y || point_x < 0 || point_y < 0) {
+						std::stringstream Error;
+						Error << "bad value in config file" << " " << Point.x << " " << Point.y << " " << Point.z;
+						throw std::runtime_error(Error.str());
+					}
 					image.setPixel({static_cast<unsigned>(point_x), static_cast<unsigned>(point_y)}, color);
 				}
 			}
