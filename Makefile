@@ -1,10 +1,10 @@
 all:
-	cmake ./ -B build
-	make -C build
+	@cmake ./ -B build -DCMAKE_BUILD_TYPE=Release
+	@make -C build
 
 fast:
 	@echo "won't redo the cmake file"
-	make -C build
+	@make -C build
 
 clean:
-	rm -rf build
+	@rm -rf build
