@@ -3,6 +3,9 @@
 #include <stdexcept>
 #include <cmath>
 #include <iostream>
+#include <execution>
+#include <algorithm>
+#include <thread>
 
 #include <SFML/System/Vector2.hpp>
 #include <SFML/System/Vector3.hpp>
@@ -15,5 +18,5 @@ sf::Vector3<double> findHeight3D(sf::Vector3<double> pointOne, sf::Vector3<doubl
 sf::Vector3<double> findHeight3D(sf::Vector3<int> pointOne, sf::Vector3<int> pointTwo, double position);
 
 void calculateGrid(const std::vector<std::vector<sf::Vector3<int>>>& map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint, const int& scale);
-void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<int>>> &map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint, const int& scale_image, const int& max_z, const float& flood_percentage);
-std::vector<std::vector<sf::Vector3<double>>> calculateGridPoint(sf::Vector3<int> pointOne, sf::Vector3<int> pointTwo, sf::Vector3<int> pointThree, sf::Vector3<int> pointFour, int scale);
+void calculateImage(std::vector<std::vector<sf::Image>> &images, const std::vector<std::vector<sf::Vector3<int>>> &map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint, const int& scale_image, const int& max_z, const float& flood_percentage);
+void calculateGridPoint(sf::Vector3<int> pointOne, sf::Vector3<int> pointTwo, sf::Vector3<int> pointThree, sf::Vector3<int> pointFour, int scale, std::vector<std::vector<sf::Vector3<double>>> &result);

@@ -9,13 +9,37 @@
 #include "Parser.hpp"
 #include "Interpolater.hpp"
 
-void displayImage(sf::Image &image, sf::RenderWindow &window) {
+void displayImage(std::vector<std::vector<sf::Image>> &images, sf::RenderWindow &window) {
 	sf::Texture texture;
-	(void) texture.loadFromImage(image);
+	for (auto &line_image : images) {
+		for (auto &image : line_image) {
+			(void) texture.loadFromImage(image);
+			sf::Sprite sprite(texture);
+			window.draw(sprite);
+		}
+	}
 
+	window.display();
+}
+
+void displayImageAlt(std::vector<std::vector<sf::Image>> &images, sf::RenderWindow &window) {
+	static int index_x = 0;
+	static int index_y = 0;
+
+	sf::Texture texture;
+	(void) texture.loadFromImage(images[index_x++ / 10][index_y / 10]);
 	sf::Sprite sprite(texture);
 	window.draw(sprite);
+
 	window.display();
+
+	if (index_x == (images.size() - 1) * 10) {
+		index_x = 0;
+		index_y += 10;
+		if (index_y == (images[0].size() - 1) * 10) {
+			index_y = 0;
+		}
+	}
 }
 
 int main(int argc, char **argv) {
@@ -45,7 +69,7 @@ int main(int argc, char **argv) {
 		std::cout << std::endl;
 	}
 
-	int scale = 400;
+	int scale = 500;
 	int scale_image;
 	if (max_x >= 1000 || max_y >= 1000) {
 		if (max_x > max_y)
@@ -60,7 +84,18 @@ int main(int argc, char **argv) {
 	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
 	window.setFramerateLimit(60);
 
-	sf::Image image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Blue);
+	std::vector<std::vector<sf::Image>> images;
+
+	images.resize(map.size());
+	for (auto &line_image : images) {
+		line_image.resize(map[0].size());
+	}
+
+	for (auto &line_image : images) {
+		for (auto &image : line_image) {
+			image = sf::Image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Transparent);
+		}
+	}
 
 	int max_z = 0;
 	for (const auto item : point) {
@@ -68,21 +103,49 @@ int main(int argc, char **argv) {
 			max_z = item.z;
 	}
 
-	float flood_percentage = 0.0;
+	float flood_percentage = 1.0;
 	std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> gridPoint;
+
+	auto start = std::chrono::high_resolution_clock::now();
 
 	calculateGrid(map, gridPoint, scale);
 
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "grid calculated in " << duration.count() << " seconds" << std::endl;
+
+	start = std::chrono::high_resolution_clock::now();
+
 	try {
-		calculateImage(image, map, gridPoint, scale_image, max_z, flood_percentage);
+		calculateImage(images, map, gridPoint, scale_image, max_z,flood_percentage);
 	} catch (std::exception& error) {
 		std::cout << error.what() << std::endl;
 		return (1);
 	}
-	displayImage(image, window);
+
+	end = std::chrono::high_resolution_clock::now();
+	duration = end - start;
+	std::cout << "render calculated in " << duration.count() << " seconds" << std::endl;
+
+	displayImage(images, window);
+
+	sf::Image background_image = sf::Image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Blue);
+	sf::Texture background_texture(background_image);
+	sf::Sprite background_sprite(background_texture);
+	window.draw(background_sprite);
+
+	bool refresh = true;
+	bool debug = false;
 
 	while (window.isOpen()) {
-		displayImage(image, window);
+		if (refresh || debug) {
+			window.draw(background_sprite);
+			if (debug)
+				displayImageAlt(images, window);
+			else
+				displayImage(images, window);
+			refresh = false;
+		}
 		while (const std::optional event = window.pollEvent()) {
 			if (event->is<sf::Event::Closed>())
 				window.close();
@@ -95,16 +158,19 @@ int main(int argc, char **argv) {
 					flood_percentage += 1.0;
 				if (event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Down)
 					flood_percentage -= 1.0;
-				if (flood_percentage > 100.0)
-					flood_percentage = 0.0;
-				if (flood_percentage < 0.0)
-					flood_percentage = 0.0;
+				if (event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space)
+					debug = !debug;
+				if (flood_percentage > 100.1)
+					flood_percentage = 100.1;
+				if (flood_percentage < 0.1)
+					flood_percentage = 0.1;
 				try {
-					calculateImage(image, map, gridPoint, scale_image, max_z, flood_percentage);
+					calculateImage(images, map, gridPoint, scale_image, max_z, flood_percentage);
 				} catch (std::exception& error) {
 					std::cout << error.what() << std::endl;
 					return (1);
 				}
+				refresh = true;
 			}
 		}
 	}
