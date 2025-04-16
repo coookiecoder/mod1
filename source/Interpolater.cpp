@@ -67,23 +67,25 @@ void calculateImage(sf::Image& image, const std::vector<std::vector<sf::Vector3<
 		for (unsigned int y = 0; y < map[x].size() - 1; y++) {
 			for (const auto &linePoint: gridPoint[x][y]) {
 				for (const auto &Point: linePoint) {
-					double point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2.0) - (Point.y / scale_image / 2);
-					double point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / (max_z / 100.0)) + image.getSize().y / 4.0;
-					if (Point.z < max_z / (100 / flood_percentage)) {
-						color.r = 0;
-						color.g = 0;
-						color.b = 255;
-					} else {
-						color.r = Point.z / max_z * 255;
-						color.g = 255 - color.r;
-						color.b = 0;
+					if (Point.z > max_z / (100 / flood_percentage) - max_z / 100 * 1.1 && Point.z < max_z / (100 / flood_percentage) + max_z / 100 * 1.1) {
+						double point_x = (Point.x / scale_image / 2) + (image.getSize().x / 2.0) - (Point.y / scale_image / 2);
+						double point_y = ((Point.y / scale_image / 2) + (Point.x / scale_image / 2)) / 2 - (Point.z / (max_z / 100.0)) + image.getSize().y / 4.0;
+						if (Point.z < max_z / (100 / flood_percentage)) {
+							color.r = 0;
+							color.g = 0;
+							color.b = 255;
+						} else {
+							color.r = Point.z / max_z * 255;
+							color.g = 255 - color.r;
+							color.b = 0;
+						}
+						if (image.getSize().x <= point_x || image.getSize().y <= point_y || point_x < 0 || point_y < 0) {
+							std::stringstream Error;
+							Error << "bad value in config file" << " " << Point.x << " " << Point.y << " " << Point.z;
+							throw std::runtime_error(Error.str());
+						}
+						image.setPixel({static_cast<unsigned>(point_x), static_cast<unsigned>(point_y)}, color);
 					}
-					if (image.getSize().x <= point_x || image.getSize().y <= point_y || point_x < 0 || point_y < 0) {
-						std::stringstream Error;
-						Error << "bad value in config file" << " " << Point.x << " " << Point.y << " " << Point.z;
-						throw std::runtime_error(Error.str());
-					}
-					image.setPixel({static_cast<unsigned>(point_x), static_cast<unsigned>(point_y)}, color);
 				}
 			}
 		}
