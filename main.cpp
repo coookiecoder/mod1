@@ -143,6 +143,95 @@ void flood_mode(const std::vector<sf::Vector3<int>>& point, const std::vector<st
 	}
 }
 
+void simulation_mode(const std::vector<sf::Vector3<int>>& point, const std::vector<std::vector<sf::Vector3<int>>>& map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint) {
+	const unsigned int max_x = map[map.size() - 1][map[map.size() - 1].size() - 1].x;
+	const unsigned int max_y = map[map.size() - 1][map[map.size() - 1].size() - 1].y;
+	int scale_image;
+
+	if (max_x >= 1000 || max_y >= 1000) {
+		if (max_x > max_y)
+			scale_image = max_x / 1000;
+		else
+			scale_image = max_y / 1000;
+	} else {
+		std::cout << "map to small" << std::endl;
+		exit(1);
+	}
+
+	int max_z = 0;
+	for (const auto item : point) {
+		if (item.z > max_z)
+			max_z = item.z;
+	}
+
+	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
+	window.setFramerateLimit(60);
+
+	std::vector<std::vector<sf::Image>> images;
+
+	images.resize(map.size());
+	for (auto &line_image : images) {
+		line_image.resize(map[0].size());
+	}
+
+	for (auto &line_image : images) {
+		for (auto &image : line_image) {
+			image = sf::Image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Transparent);
+		}
+	}
+
+	float flood_percentage = 0.0;
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	try {
+		calculateImage(images, map, gridPoint, scale_image, max_z,flood_percentage);
+	} catch (std::exception& error) {
+		std::cout << error.what() << std::endl;
+		exit(1);
+	}
+
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "render calculated in " << duration.count() << " seconds" << std::endl;
+
+	displayImage(images, window);
+
+	sf::Image background_image = sf::Image({max_x / scale_image + 1, max_y / scale_image + 1}, sf::Color::Blue);
+	sf::Texture background_texture(background_image);
+	sf::Sprite background_sprite(background_texture);
+	window.draw(background_sprite);
+
+	bool refresh = true;
+	bool debug = false;
+
+	while (window.isOpen()) {
+		if (refresh || debug) {
+			window.draw(background_sprite);
+			if (debug)
+				displayImageAlt(images, window);
+			else
+				displayImage(images, window);
+			refresh = false;
+		}
+		while (const std::optional event = window.pollEvent()) {
+			if (event->is<sf::Event::Closed>())
+				window.close();
+			if (event->is<sf::Event::KeyPressed>() && event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape) {
+				window.close();
+				continue;
+			}
+			try {
+				calculateImage(images, map, gridPoint, scale_image, max_z, flood_percentage);
+			} catch (std::exception& error) {
+				std::cout << error.what() << std::endl;
+				exit(1);
+			}
+			refresh = true;
+		}
+	}
+}
+
 int main(int argc, char **argv) {
 	if (argc != 2) {
 		std::cout << "invalid use : ./mod1 <file>" << std::endl;
@@ -178,7 +267,22 @@ int main(int argc, char **argv) {
 	std::chrono::duration<double> duration = end - start;
 	std::cout << "grid calculated in " << duration.count() << " seconds" << std::endl;
 
-	flood_mode(point, map, gridPoint);
+	std::string input = "none";
+
+	while (input != "rain" && input != "wave" && input != "flood") {
+		std::cout << "what mode do you want to launch : rain wave flood" << std::endl;
+		std::cin >> input;
+
+		if (std::cin.eof())
+			exit(1);
+	}
+
+	if (input == "rain")
+		simulation_mode(point, map, gridPoint);
+	if (input == "wave")
+		simulation_mode(point, map, gridPoint);
+	if (input == "flood")
+		flood_mode(point, map, gridPoint);
 
 	return (0);
 }
