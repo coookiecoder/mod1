@@ -42,35 +42,11 @@ void displayImageAlt(std::vector<std::vector<sf::Image>> &images, sf::RenderWind
 	}
 }
 
-int main(int argc, char **argv) {
-	if (argc != 2) {
-		std::cout << "invalid use : ./mod1 <file>" << std::endl;
-		return (1);
-	}
-
-	std::vector<sf::Vector3<int>> point;
-
-	try {
-		point = parseConfig(argv[1]);
-	} catch (std::exception& error) {
-		std::cout << error.what() << std::endl;
-		return (1);
-	}
-
-	std::vector<std::vector<sf::Vector3<int>>> map = convertTo2DMap(point);
-
+void flood_mode(const std::vector<sf::Vector3<int>>& point, const std::vector<std::vector<sf::Vector3<int>>>& map, std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> &gridPoint) {
 	const unsigned int max_x = map[map.size() - 1][map[map.size() - 1].size() - 1].x;
 	const unsigned int max_y = map[map.size() - 1][map[map.size() - 1].size() - 1].y;
-
-	for (const auto &line: map) {
-		for (const auto &item: line) {
-			std::cout << "(" << std::setw(5) << item.x << " " << std::setw(6) << item.y << " " << std::setw(6) << item.z << ") ";
-		}
-		std::cout << std::endl;
-	}
-
-	int scale = 500;
 	int scale_image;
+
 	if (max_x >= 1000 || max_y >= 1000) {
 		if (max_x > max_y)
 			scale_image = max_x / 1000;
@@ -78,7 +54,13 @@ int main(int argc, char **argv) {
 			scale_image = max_y / 1000;
 	} else {
 		std::cout << "map to small" << std::endl;
-		return (1);
+		exit(1);
+	}
+
+	int max_z = 0;
+	for (const auto item : point) {
+		if (item.z > max_z)
+			max_z = item.z;
 	}
 
 	sf::RenderWindow window(sf::VideoMode({max_x / scale_image + 1, max_y / scale_image + 1}), "mod1");
@@ -97,34 +79,19 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	int max_z = 0;
-	for (const auto item : point) {
-		if (item.z > max_z)
-			max_z = item.z;
-	}
-
 	float flood_percentage = 1.0;
-	std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> gridPoint;
 
 	auto start = std::chrono::high_resolution_clock::now();
-
-	calculateGrid(map, gridPoint, scale);
-
-	auto end = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> duration = end - start;
-	std::cout << "grid calculated in " << duration.count() << " seconds" << std::endl;
-
-	start = std::chrono::high_resolution_clock::now();
 
 	try {
 		calculateImage(images, map, gridPoint, scale_image, max_z,flood_percentage);
 	} catch (std::exception& error) {
 		std::cout << error.what() << std::endl;
-		return (1);
+		exit(1);
 	}
 
-	end = std::chrono::high_resolution_clock::now();
-	duration = end - start;
+	auto end = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> duration = end - start;
 	std::cout << "render calculated in " << duration.count() << " seconds" << std::endl;
 
 	displayImage(images, window);
@@ -168,13 +135,50 @@ int main(int argc, char **argv) {
 					calculateImage(images, map, gridPoint, scale_image, max_z, flood_percentage);
 				} catch (std::exception& error) {
 					std::cout << error.what() << std::endl;
-					return (1);
+					exit(1);
 				}
 				refresh = true;
 			}
 		}
 	}
+}
 
-	window.clear();
+int main(int argc, char **argv) {
+	if (argc != 2) {
+		std::cout << "invalid use : ./mod1 <file>" << std::endl;
+		return (1);
+	}
+
+	std::vector<sf::Vector3<int>> point;
+
+	try {
+		point = parseConfig(argv[1]);
+	} catch (std::exception& error) {
+		std::cout << error.what() << std::endl;
+		return (1);
+	}
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	std::vector<std::vector<sf::Vector3<int>>> map = convertTo2DMap(point);
+
+	for (const auto &line: map) {
+		for (const auto &item: line) {
+			std::cout << "(" << std::setw(5) << item.x << " " << std::setw(6) << item.y << " " << std::setw(6) << item.z << ") ";
+		}
+		std::cout << std::endl;
+	}
+
+	int scale = 500;
+	std::vector<std::vector<std::vector<std::vector<sf::Vector3<double>>>>> gridPoint;
+	calculateGrid(map, gridPoint, scale);
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> duration = end - start;
+	std::cout << "grid calculated in " << duration.count() << " seconds" << std::endl;
+
+	flood_mode(point, map, gridPoint);
+
 	return (0);
 }
